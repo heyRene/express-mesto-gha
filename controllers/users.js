@@ -38,13 +38,13 @@ const createUser = (req, res, next) => {
   const { name, about, avatar } = req.body;
   User.create({ name, about, avatar })
     .then((newUser) => {
-      res.send(newUser);
+      res.send({ newUser });
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
         res.status(errors.codes.badRequest);
         res.send({ message: 'Переданы некорректные данные' });
-      } else {
+      } else if (err.name === 'CastError') {
         res.status(errors.codes.serverError);
         res.send({ message: 'Произошла ошибка на сервере' });
       }
