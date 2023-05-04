@@ -36,7 +36,7 @@ const createCard = (req, res, next) => {
     });
 };
 
-const deleteCard = (req, res, next) => {
+const deleteCard = (req, res) => {
   Card.findByIdAndRemove(req.params.cardId)
     .orFail(() => {
       res.status(errors.codes.notFound);
@@ -45,8 +45,9 @@ const deleteCard = (req, res, next) => {
     .then(() => {
       res.send({ message: 'Карточка удалена' });
     })
-    .catch((err) => {
-      next(err);
+    .catch(() => {
+      res.status(errors.codes.badRequest);
+      res.send({ message: 'Переданы некорректные данные' });
     });
 };
 
@@ -60,17 +61,12 @@ const setLike = (req, res, next) => {
       res.send(card);
     })
     .catch((err) => {
-      if (err.name === 'ValidationError') {
-        res.status(errors.codes.badRequest);
-        res.send({ message: 'Переданы некорректные данные' });
-      } else {
-        res.status(errors.codes.serverError);
-        res.send({ message: 'Произошла ошибка на сервере' });
-      }
+      res.status(errors.codes.badRequest);
+      res.send({ message: 'Переданы некорректные данные' });
       next(err);
     });
 };
-const deleteLike = (req, res) => {
+const deleteLike = (req, res, next) => {
   Card.findByIdAndUpdate(req.params.cardId, { $pull: { likes: req.user._id } }, { new: true })
     .orFail(() => {
       res.status(errors.codes.notFound);
@@ -80,13 +76,9 @@ const deleteLike = (req, res) => {
       res.send(card);
     })
     .catch((err) => {
-      if (err.name === 'ValidationError') {
-        res.status(errors.codes.badRequest);
-        res.send({ message: 'Переданы некорректные данные' });
-      } else {
-        res.status(errors.codes.serverError);
-        res.send({ message: 'Произошла ошибка на сервере' });
-      }
+      res.status(errors.codes.badRequest);
+      res.send({ message: 'Переданы некорректные данные' });
+      next(err);
     });
 };
 
