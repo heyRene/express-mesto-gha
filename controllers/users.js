@@ -28,8 +28,13 @@ const getUserId = (req, res, next) => {
       res.send(user);
     })
     .catch((err) => {
-      res.status(errors.codes.serverError);
-      res.send({ message: 'Произошла ошибка на сервере' });
+      if (err.name === 'ValidationError') {
+        res.status(errors.codes.badRequest);
+        res.send({ message: 'Переданы некорректные данные' });
+      } else if (err.name === 'CastError') {
+        res.status(errors.codes.serverError);
+        res.send({ message: 'Произошла ошибка на сервере' });
+      }
       next(err);
     });
 };

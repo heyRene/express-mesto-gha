@@ -19,17 +19,16 @@ const getCards = (req, res, next) => {
 };
 
 const createCard = (req, res, next) => {
-  const id = req.user._id;
   const { name, link } = req.body;
-  Card.create({ name, link, owner: id })
+  Card.create({ name, link, owner: req.user._id })
     .then((card) => {
-      req.send(card);
+      res.send({ card });
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
         res.status(errors.codes.badRequest);
         res.send({ message: 'Переданы некорректные данные' });
-      } else {
+      } else if (err.name === 'CastError') {
         res.status(errors.codes.serverError);
         res.send({ message: 'Произошла ошибка на сервере' });
       }
