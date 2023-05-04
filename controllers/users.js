@@ -28,13 +28,8 @@ const getUserId = (req, res, next) => {
       res.send(user);
     })
     .catch((err) => {
-      if (err.name === 'ValidationError') {
-        res.status(errors.codes.badRequest);
-        res.send({ message: 'Переданы некорректные данные' });
-      } else if (err.name === 'CastError') {
-        res.status(errors.codes.serverError);
-        res.send({ message: 'Произошла ошибка на сервере' });
-      }
+      res.status(errors.codes.badRequest);
+      res.send({ message: 'Переданы некорректные данные' });
       next(err);
     });
 };
@@ -87,13 +82,13 @@ const updateUserInfo = (req, res, next) => {
       res.send({ message: 'Пользователь c указанным _id не найден.' });
     })
     .then((user) => {
-      res.send(user);
+      res.send({ user });
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
         res.status(errors.codes.badRequest);
         res.send({ message: 'Переданы некорректные данные' });
-      } else {
+      } else if (err.name === 'CastError') {
         res.status(errors.codes.serverError);
         res.send({ message: 'Произошла ошибка на сервере' });
       }
