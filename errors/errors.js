@@ -1,8 +1,8 @@
 const errors = {
   codes: {
-    badRequest: 400,
-    notFound: 404,
-    serverError: 500,
+    BAD_REQUEST: 400,
+    NOT_FOUND: 404,
+    SERVER_ERROR: 500,
   },
 };
 

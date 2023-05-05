@@ -1,40 +1,38 @@
 const User = require('../models/user');
 const { errors } = require('../errors/errors');
 
-const getUsers = (req, res, next) => {
+const getUsers = (req, res) => {
   User.find({})
     .then((users) => {
       res.send(users);
     })
-    .catch((err) => {
-      if (err.name === 'ValidationError') {
-        res.status(errors.codes.badRequest);
-        res.send({ message: 'Переданы некорректные данные' });
-      } else {
-        res.status(errors.codes.serverError);
-        res.send({ message: 'Произошла ошибка на сервере' });
-      }
-      next(err);
+    .catch(() => {
+      res.status(errors.codes.SERVER_ERROR);
+      res.send({ message: 'Произошла ошибка на сервере' });
     });
 };
 
-const getUserId = (req, res, next) => {
+const getUserId = (req, res) => {
   User.findById(req.params.userId)
     .orFail(() => {
-      res.status(errors.codes.notFound);
+      res.status(errors.codes.NOT_FOUND);
       res.send({ message: 'Пользователь по указанному _id не найден' });
     })
     .then((user) => {
       res.send(user);
     })
     .catch((err) => {
-      res.status(errors.codes.badRequest);
-      res.send({ message: 'Переданы некорректные данные' });
-      next(err);
+      if (err.name === 'ValidationError') {
+        res.status(errors.codes.BAD_REQUEST);
+        res.send({ message: 'Переданы некорректные данные' });
+      } else {
+        res.status(errors.codes.SERVER_ERROR);
+        res.send({ message: 'Произошла ошибка на сервере' });
+      }
     });
 };
 
-const createUser = (req, res, next) => {
+const createUser = (req, res) => {
   const { name, about, avatar } = req.body;
   User.create({ name, about, avatar })
     .then((newUser) => {
@@ -42,43 +40,20 @@ const createUser = (req, res, next) => {
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        res.status(errors.codes.badRequest);
-        res.send({ message: 'Переданы некорректные данные' });
-      } else if (err.name === 'CastError') {
-        res.status(errors.codes.serverError);
-        res.send({ message: 'Произошла ошибка на сервере' });
-      }
-      next(err);
-    });
-};
-
-const updateAvatar = (req, res, next) => {
-  const { avatar } = req.body;
-  User.findByIdAndUpdate(req.user._id, { avatar }, { new: true })
-    .orFail(() => {
-      res.status(errors.codes.notFound);
-      res.send({ message: 'Пользователь c указанным _id не найден.' });
-    })
-    .then((user) => {
-      res.send(user);
-    })
-    .catch((err) => {
-      if (err.name === 'ValidationError') {
-        res.status(errors.codes.badRequest);
+        res.status(errors.codes.BAD_REQUEST);
         res.send({ message: 'Переданы некорректные данные' });
       } else {
-        res.status(errors.codes.serverError);
+        res.status(errors.codes.SERVER_ERROR);
         res.send({ message: 'Произошла ошибка на сервере' });
       }
-      next(err);
     });
 };
 
-const updateUserInfo = (req, res, next) => {
-  const { name, about } = req.body;
-  User.findByIdAndUpdate(req.user._id, { name, about }, { new: true, runValidators: true })
+const updateUserProfile = (req, res, data) => {
+  const userId = req.user._id;
+  User.findByIdAndUpdate(userId, data, { new: true, runValidators: true })
     .orFail(() => {
-      res.status(errors.codes.notFound);
+      res.status(errors.codes.NOT_FOUND);
       res.send({ message: 'Пользователь c указанным _id не найден.' });
     })
     .then((user) => {
@@ -86,14 +61,22 @@ const updateUserInfo = (req, res, next) => {
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        res.status(errors.codes.badRequest);
+        res.status(errors.codes.BAD_REQUEST);
         res.send({ message: 'Переданы некорректные данные' });
-      } else if (err.name === 'CastError') {
-        res.status(errors.codes.serverError);
+      } else {
+        res.status(errors.codes.SERVER_ERROR);
         res.send({ message: 'Произошла ошибка на сервере' });
       }
-      next(err);
     });
+};
+
+const updateUserInfo = (req, res) => {
+  const { name, about } = req.body;
+  updateUserProfile(req, res, { name, about });
+};
+const updateAvatar = (req, res) => {
+  const { avatar } = req.body;
+  updateUserProfile(req, res, { avatar });
 };
 
 module.exports = {
