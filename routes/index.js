@@ -7,7 +7,7 @@ const cardsRouter = require('./cards');
 router.use('/users', usersRouter);
 router.use('/cards', cardsRouter);
 router.use((req, res, next) => {
-  res.status(errors.codes.notFound);
+  res.status(errors.codes.NOT_FOUND);
   res.send({ message: `Запрашиваемый ресурс по адресу '${req.path}' не найден` });
   next();
 });

@@ -38,14 +38,9 @@ const deleteCard = (req, res) => {
     .then(() => {
       res.send({ message: 'Карточка удалена' });
     })
-    .catch((err) => {
-      if (err.name === 'ValidationError') {
-        res.status(errors.codes.BAD_REQUEST);
-        res.send({ message: 'Переданы некорректные данные' });
-      } else {
-        res.status(errors.codes.SERVER_ERROR);
-        res.send({ message: 'Произошла ошибка на сервере' });
-      }
+    .catch(() => {
+      res.status(errors.codes.BAD_REQUEST);
+      res.send({ message: 'Переданы некорректные данные' });
     });
 };
 
