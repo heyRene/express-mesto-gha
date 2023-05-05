@@ -53,14 +53,9 @@ const setLike = (req, res) => {
     .then((card) => {
       res.send(card);
     })
-    .catch((err) => {
-      if (err.name === 'ValidationError') {
-        res.status(errors.codes.BAD_REQUEST);
-        res.send({ message: 'Переданы некорректные данные' });
-      } else {
-        res.status(errors.codes.SERVER_ERROR);
-        res.send({ message: 'Произошла ошибка на сервере' });
-      }
+    .catch(() => {
+      res.status(errors.codes.BAD_REQUEST);
+      res.send({ message: 'Переданы некорректные данные' });
     });
 };
 const deleteLike = (req, res) => {
@@ -72,14 +67,9 @@ const deleteLike = (req, res) => {
     .then((card) => {
       res.send(card);
     })
-    .catch((err) => {
-      if (err.name === 'ValidationError') {
-        res.status(errors.codes.BAD_REQUEST);
-        res.send({ message: 'Переданы некорректные данные' });
-      } else {
-        res.status(errors.codes.SERVER_ERROR);
-        res.send({ message: 'Произошла ошибка на сервере' });
-      }
+    .catch(() => {
+      res.status(errors.codes.BAD_REQUEST);
+      res.send({ message: 'Переданы некорректные данные' });
     });
 };
 

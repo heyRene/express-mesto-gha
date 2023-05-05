@@ -25,6 +25,9 @@ const getUserId = (req, res) => {
       if (err.name === 'ValidationError') {
         res.status(errors.codes.BAD_REQUEST);
         res.send({ message: 'Переданы некорректные данные' });
+      } else if (err.name === 'CastError') {
+        res.status(errors.codes.BAD_REQUEST);
+        res.send({ message: 'Передан некорректный id' });
       } else {
         res.status(errors.codes.SERVER_ERROR);
         res.send({ message: 'Произошла ошибка на сервере' });
