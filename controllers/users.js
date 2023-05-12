@@ -85,7 +85,7 @@ const updateUserProfile = (req, res, data, next) => {
       res.send({ user });
     })
     .catch((err) => {
-      if (err.name === 'ValidationError') {
+      if (err.name === 'ValidationError' || err.name === 'CastError') {
         next(new ValidationError('Переданы некорректные данные'));
       } else {
         next(err);
