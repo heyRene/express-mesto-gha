@@ -1,15 +1,19 @@
 const router = require('express').Router();
-const { errors } = require('../errors/errors');
+const auth = require('../middlewares/auth');
 
 const usersRouter = require('./users');
 const cardsRouter = require('./cards');
+const signinRouter = require('./signin');
+const signupRouter = require('./signup');
+const NotFoundError = require('../errors/NotFoundError');
 
-router.use('/users', usersRouter);
-router.use('/cards', cardsRouter);
+router.use('/signup', signupRouter);
+router.use('/signin', signinRouter);
+
+router.use('/users', auth, usersRouter);
+router.use('/cards', auth, cardsRouter);
 router.use((req, res, next) => {
-  res.status(errors.codes.NOT_FOUND);
-  res.send({ message: `Запрашиваемый ресурс по адресу '${req.path}' не найден` });
-  next();
+  next(new NotFoundError(`Запрашиваемый ресурс по адресу '${req.path}' не найден`));
 });
 
 module.exports = router;

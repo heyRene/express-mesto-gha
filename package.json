@@ -20,10 +20,15 @@
   },
   "homepage": "https://github.com/heyRene/express-mesto-gha#readme",
   "dependencies": {
+    "bcrypt": "^5.1.0",
+    "bcryptjs": "^2.4.3",
     "body-parser": "^1.20.2",
+    "celebrate": "^15.0.1",
+    "dotenv": "^16.0.3",
     "express": "^4.18.2",
-    "mongoose": "^7.1.0"
-
+    "jsonwebtoken": "^9.0.0",
+    "mongoose": "^7.1.0",
+    "validator": "^13.9.0"
   },
   "devDependencies": {
     "eslint": "^8.39.0",

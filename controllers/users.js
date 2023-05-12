@@ -1,74 +1,94 @@
+const { NODE_ENV, JWT_SECRET } = process.env;
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 const User = require('../models/user');
-const { errors } = require('../errors/errors');
+const NotFoundError = require('../errors/NotFoundError');
+const UserExistError = require('../errors/UserExistError');
+const ValidationError = require('../errors/ValidationError');
 
-const getUsers = (req, res) => {
+const getUsers = (req, res, next) => {
   User.find({})
     .then((users) => {
       res.send(users);
     })
-    .catch(() => {
-      res.status(errors.codes.SERVER_ERROR);
-      res.send({ message: 'Произошла ошибка на сервере' });
-    });
+    .catch(next);
 };
 
-const getUserId = (req, res) => {
+const getUserId = (req, res, next) => {
   User.findById(req.params.userId)
-    .orFail(() => {
-      res.status(errors.codes.NOT_FOUND);
-      res.send({ message: 'Пользователь по указанному _id не найден' });
-    })
+    .orFail(new NotFoundError('Пользователь по указанному _id не найден'))
     .then((user) => {
       res.send(user);
     })
     .catch((err) => {
-      if (err.name === 'ValidationError') {
-        res.status(errors.codes.BAD_REQUEST);
-        res.send({ message: 'Переданы некорректные данные' });
-      } else if (err.name === 'CastError') {
-        res.status(errors.codes.BAD_REQUEST);
-        res.send({ message: 'Передан некорректный id' });
+      if (err.name === 'CastError') {
+        next(new ValidationError('Передан некорректный id'));
       } else {
-        res.status(errors.codes.SERVER_ERROR);
-        res.send({ message: 'Произошла ошибка на сервере' });
+        next(err);
       }
     });
 };
 
-const createUser = (req, res) => {
-  const { name, about, avatar } = req.body;
-  User.create({ name, about, avatar })
+const getCurrentUser = (req, res, next) => {
+  User.findById(req.user.userId)
+    .orFail(new NotFoundError('Пользователь по указанному _id не найден'))
+    .then((user) => res.send(user))
+    .catch(next);
+};
+
+const login = (req, res, next) => {
+  const { email, password } = req.body;
+  User.findUserByCredentials(email, password)
+    .then((user) => {
+      const token = jwt.sign({ _id: user._id }, NODE_ENV === 'production' ? JWT_SECRET : 'dev-secret', { expiresIn: '7d' });
+      res.send({ token });
+    })
+    .catch((next));
+};
+
+const createUser = (req, res, next) => {
+  const {
+    name,
+    about,
+    avatar,
+    email,
+    password,
+  } = req.body;
+
+  bcrypt.hash(password, 10)
+    .then((hash) => User.create({
+      name,
+      about,
+      avatar,
+      email,
+      password: hash,
+    }))
     .then((newUser) => {
       res.send({ newUser });
     })
     .catch((err) => {
-      if (err.name === 'ValidationError') {
-        res.status(errors.codes.BAD_REQUEST);
-        res.send({ message: 'Переданы некорректные данные' });
+      if (err.code === 1100) {
+        next(new UserExistError('Пользователь с таким email уже существует'));
+      } else if (err.name === 'ValidationError') {
+        next(new ValidationError('Передан некорректные данные'));
       } else {
-        res.status(errors.codes.SERVER_ERROR);
-        res.send({ message: 'Произошла ошибка на сервере' });
+        next(err);
       }
     });
 };
 
-const updateUserProfile = (req, res, data) => {
+const updateUserProfile = (req, res, data, next) => {
   const userId = req.user._id;
   User.findByIdAndUpdate(userId, data, { new: true, runValidators: true })
-    .orFail(() => {
-      res.status(errors.codes.NOT_FOUND);
-      res.send({ message: 'Пользователь c указанным _id не найден.' });
-    })
+    .orFail(new NotFoundError('Пользователь по указанному _id не найден'))
     .then((user) => {
       res.send({ user });
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        res.status(errors.codes.BAD_REQUEST);
-        res.send({ message: 'Переданы некорректные данные' });
+        next(new ValidationError('Переданы некорректные данные'));
       } else {
-        res.status(errors.codes.SERVER_ERROR);
-        res.send({ message: 'Произошла ошибка на сервере' });
+        next(err);
       }
     });
 };
@@ -88,4 +108,6 @@ module.exports = {
   getUserId,
   updateAvatar,
   updateUserInfo,
+  login,
+  getCurrentUser,
 };
