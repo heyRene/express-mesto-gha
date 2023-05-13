@@ -1,7 +1,6 @@
 const signupRouter = require('express').Router();
 const { celebrate, Joi } = require('celebrate');
 const { createUser } = require('../controllers/users');
-const { regexLink } = require('../utils/constants');
 
 signupRouter.post(
   '/',
@@ -12,7 +11,7 @@ signupRouter.post(
       name: Joi.string().min(2).max(30),
       about: Joi.string().min(2).max(30),
       avatar: Joi.string().regex(
-        regexLink,
+        /^(http|https)?:\/\/(www\.)?[-a-zA-Z0-9@:%._+~#=]{1,}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9-._~:/?#[\]@!$&'()*+,;=]*)?$/im,
       ),
     }),
   }),
