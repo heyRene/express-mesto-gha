@@ -12,7 +12,7 @@ router.use('/signin', signinRouter);
 
 router.use('/users', auth, usersRouter);
 router.use('/cards', auth, cardsRouter);
-router.use((req, res, next) => {
+router.use('*', (req, res, next) => {
   next(new NotFoundError(`Запрашиваемый ресурс по адресу '${req.path}' не найден`));
 });
 
