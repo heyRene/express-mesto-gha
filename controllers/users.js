@@ -30,7 +30,7 @@ const getUserId = (req, res, next) => {
 };
 
 const getCurrentUser = (req, res, next) => {
-  User.findById(req.user.userId)
+  User.findById(req.user._id)
     .orFail(new NotFoundError('Пользователь по указанному _id не найден'))
     .then((user) => {
       res.send(user);
