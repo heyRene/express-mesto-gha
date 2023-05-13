@@ -16,11 +16,11 @@ mongoose.connect('mongodb://localhost:27017/mestodb');
 app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-app.use(limiter);
-app.use(helmet);
 app.use(router);
 app.use(errors());
 app.use(handleErrors);
+app.use(limiter);
+app.use(helmet);
 
 app.listen(PORT, () => {
   console.log('start server');
