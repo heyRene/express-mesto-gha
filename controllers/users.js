@@ -32,7 +32,9 @@ const getUserId = (req, res, next) => {
 const getCurrentUser = (req, res, next) => {
   User.findById(req.user.userId)
     .orFail(new NotFoundError('Пользователь по указанному _id не найден'))
-    .then((user) => res.send(user))
+    .then((user) => {
+      res.send(user);
+    })
     .catch(next);
 };
 
@@ -64,10 +66,12 @@ const createUser = (req, res, next) => {
       password: hash,
     }))
     .then((newUser) => {
-      res.send({ newUser });
+      const data = newUser.toObject();
+      delete data.password;
+      res.send(data);
     })
     .catch((err) => {
-      if (err.code === 1100) {
+      if (err.code === 11000) {
         next(new UserExistError('Пользователь с таким email уже существует'));
       } else if (err.name === 'ValidationError') {
         next(new ValidationError('Передан некорректные данные'));
